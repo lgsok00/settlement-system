@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: settlement-system
+  datasource:
+    url: jdbc:mysql://localhost:3306/settlement
+    username: root
+    password: 1111
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect  # 쿼리의 기준이 되는 데이터베이스 엔진을 설정합니다.
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
