@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect  # 쿼리의 기준이 되는 데이터베이스 엔진을 설정합니다.
@@ -18,8 +18,19 @@ spring:
 
 logging:
   level:
+    com:
+      sparta:
+        settlementsystem: DEBUG
     org:
+      springframework:
+        security: DEBUG
       hibernate:
         type:
           descriptor:
             sql: trace
+
+jwt:
+  secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+  expiration:
+    access: 600000  # 10분
+    refresh: 86400000  # 24시간

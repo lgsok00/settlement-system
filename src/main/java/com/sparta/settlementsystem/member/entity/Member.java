@@ -1,7 +1,6 @@
-package com.sparta.settlementsystem.user.entity;
+package com.sparta.settlementsystem.member.entity;
 
-import com.sparta.settlementsystem.common.AbstractTimeStamp;
-import com.sparta.settlementsystem.common.type.UserRole;
+import com.sparta.settlementsystem.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,34 +10,35 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "users")
+@Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // 기본 생성자 설정
-public class User extends AbstractTimeStamp {
+public class Member extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "user_id")
   private Long id;
 
-  @Column(name = "email", nullable = false)
+  @Column(unique = true, nullable = false)
   private String email;
 
-  @Column(name = "password", nullable = false)
+  @Column(nullable = false)
   private String password;
 
   @Enumerated(EnumType.STRING)
-  private UserRole role;
+  private MemberRole role;
 
-  @Builder
-  public User(String email, String password, UserRole role) {
+  private Member(String email, String password, MemberRole role) {
     this.email = email;
     this.password = password;
     this.role = role;
+  }
+
+  public static Member createMember(String email, String password, MemberRole role) {
+    return new Member(email, password, role);
   }
 }
