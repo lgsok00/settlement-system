@@ -1,30 +1,21 @@
 package com.sparta.settlementsystem.member.dto;
 
-import com.sparta.settlementsystem.member.entity.MemberRole;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class LoginRequestDto {
 
   private String email;
   private String password;
-  private MemberRole role;
 
-  public LoginRequestDto(String email, String password) {
-    this.email = email;
-    this.password = password;
-  }
-
-  public LoginRequestDto(String email, MemberRole role) {
-    this.email = email;
-    this.role = role;
-  }
-
-  public LoginRequestDto(String email, String password, MemberRole role) {
-    this.email = email;
-    this.password = password;
-    this.role = role;
+  @Override
+  public String toString() {
+    return "LoginRequestDto{" +
+            "email=" + email +'\'' +
+            '}';
   }
 }

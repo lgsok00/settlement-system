@@ -1,6 +1,5 @@
 package com.sparta.settlementsystem.security;
 
-import com.sparta.settlementsystem.member.dto.LoginRequestDto;
 import com.sparta.settlementsystem.member.entity.MemberRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,28 +8,33 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+
 public class CustomUserDetails implements UserDetails {
 
-  private final LoginRequestDto loginRequestDto;
+  private final String email;
+  private final String password;
+  private final MemberRole role;
 
-  public CustomUserDetails(LoginRequestDto loginRequestDto) {
-    this.loginRequestDto = loginRequestDto;
+  public CustomUserDetails(String email, String password, MemberRole role) {
+    this.email = email;
+    this.password = password;
+    this.role = role;
   }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    System.out.println("Role in CustomUserDetails: " + loginRequestDto.getRole());
-    return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + loginRequestDto.getRole().name()));
+    System.out.println("Role in CustomUserDetails: " + this.role);
+    return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
   }
 
   @Override
   public String getPassword() {
-    return loginRequestDto.getPassword();
+    return this.password;
   }
 
   @Override
   public String getUsername() {
-    return loginRequestDto.getEmail();
+    return this.email;
   }
 
   @Override
@@ -51,9 +55,5 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
-  }
-
-  public MemberRole getRole() {
-    return loginRequestDto.getRole();
   }
 }

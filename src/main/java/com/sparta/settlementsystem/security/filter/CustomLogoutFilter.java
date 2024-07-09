@@ -1,125 +1,89 @@
 package com.sparta.settlementsystem.security.filter;
 
+import com.sparta.settlementsystem.common.exception.CustomException;
+import com.sparta.settlementsystem.member.entity.RefreshToken;
 import com.sparta.settlementsystem.member.repository.RefreshTokenRepository;
-import com.sparta.settlementsystem.security.jwt.JwtUtil;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.filter.GenericFilterBean;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-public class CustomLogoutFilter extends GenericFilterBean {
+@Slf4j
+public class CustomLogoutFilter extends OncePerRequestFilter {
 
-  private final JwtUtil jwtUtil;
   private final RefreshTokenRepository refreshTokenRepository;
 
-  public CustomLogoutFilter(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
-    this.jwtUtil = jwtUtil;
+  public CustomLogoutFilter(RefreshTokenRepository refreshTokenRepository) {
     this.refreshTokenRepository = refreshTokenRepository;
   }
 
   @Override
-  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-          throws IOException, ServletException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                  FilterChain filterChain) throws ServletException, IOException {
 
-    doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
-  }
-
-  private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-          throws IOException, ServletException {
-    logger.info("CustomLogoutFilter: Starting logout process");
-
-    // Path and Method Verify
-    String requestUri = request.getRequestURI();
-    logger.info("CustomLogoutFilter: RequestURI: " + requestUri);
-    if (!requestUri.matches("^\\/logout$")) {
-      logger.info("CustomLogoutFilter: Not a logout request, proceeding with filter chain");
-      filterChain.doFilter(request, response);
-      return;
-    }
-
-    String requestMethod = request.getMethod();
-    logger.info("CustomLogoutFilter: Request method: " + requestMethod);
-    if (!requestMethod.equals("POST")) {
-      logger.info("CustomLogoutFilter: Not a POST request, proceeding with filter chain");
-      filterChain.doFilter(request, response);
-      return;
-    }
-
-    // Get Refresh Token
-    String refreshToken = null;
-    Cookie[] cookies = request.getCookies();
-    logger.info("CustomLogoutFilter: Checking Cookies");
-
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if (cookie.getName().equals("refresh")) {
-          refreshToken = cookie.getValue();
-          logger.info("CustomLogoutFilter: Refresh Token found in cookies");
-          break;
-        }
+    // 로그아웃 요청 URL 확인
+    if ("/api/auth/logout".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
+      String refreshToken = extractRefreshTokenFromCookie(request);
+      if (refreshToken != null) {
+        handleLogout(refreshToken, response);
+      } else {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().write("Refresh token not found");
       }
     } else {
-      logger.warn("CustomLogoutFilter: No cookies found in the request");
+      filterChain.doFilter(request, response);
     }
+  }
 
-    // Refresh Token null check
-    if (refreshToken == null) {
-      logger.error("CustomLogoutFilter: Refresh token is null");
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
-    }
-
-    // Expired Check
+  /**
+   * 로그아웃 처리를 수행하는 메서드
+   */
+  @Transactional
+  protected void handleLogout(String refreshToken, HttpServletResponse response)
+          throws IOException {
     try {
-      jwtUtil.isTokenExpired(refreshToken);
-      logger.info("CustomLogoutFilter: Refresh token is not expired");
-    } catch (ExpiredJwtException e) {
-      logger.error("CustomLogoutFilter: Refresh token has expired", e);
-      // Response Status Code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
+      // Refresh token 엔티티 조회
+      RefreshToken refreshTokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
+              .orElseThrow(() -> new CustomException("Refresh token not found"));
+
+      // Refresh token 삭제
+      refreshTokenRepository.delete(refreshTokenEntity);
+
+      // Refresh token 쿠키 제거
+      Cookie cookie = new Cookie("refresh", null);
+      cookie.setMaxAge(0);
+      cookie.setPath("/");
+      response.addCookie(cookie);
+
+      response.setStatus(HttpServletResponse.SC_OK);
+      response.getWriter().write("Logout successful");
+      log.info("Logout successful");
+
+    } catch (Exception e) {
+      log.error("Logout failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().write("Logout failed");
     }
+  }
 
-    // Token 이 Refresh Token 인지 확인
-    String category = jwtUtil.getCategoryFromToken(refreshToken);
-    logger.info("CustomLogoutFilter: Category: " + category);
-    if (!category.equals("refresh")) {
-      logger.error("CustomLogoutFilter: Token is not a refresh token");
-      // Response Status Code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
+  /**
+   * 쿠키에서 Refresh token 을 추출하는 메서드
+   */
+  private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("refresh".equals(cookie.getName())) {
+          return cookie.getValue();
+        }
+      }
     }
-
-    // DB에 저장되어 있는지 확인
-    Boolean isExist = refreshTokenRepository.existsByRefreshToken(refreshToken);
-    logger.info("CustomLogoutFilter: Refresh token exists in DB: " + isExist);
-    if (!isExist) {
-      logger.info("CustomLogoutFilter: Refresh token does not exist in DB");
-      // Response Status Code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
-    }
-
-    // 로그아웃 진행
-    // RefreshToken DB 제거
-    refreshTokenRepository.deleteByRefreshToken(refreshToken);
-    logger.info("CustomLogoutFilter: Refresh token deleted from DB");
-
-    // RefreshToken Cookie 값 0
-    Cookie refreshTokenCookie = new Cookie("refresh", null);
-    refreshTokenCookie.setMaxAge(0);
-    refreshTokenCookie.setPath("/");
-
-    response.addCookie(refreshTokenCookie);
-    logger.info("CustomLogoutFilter: Refresh token cookie invalidated");
-    response.setStatus(HttpServletResponse.SC_OK);
-    logger.info("CustomLogoutFilter: Logout successful");
+    return null;
   }
 }

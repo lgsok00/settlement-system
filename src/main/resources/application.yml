@@ -20,7 +20,7 @@ logging:
   level:
     com:
       sparta:
-        settlementsystem: DEBUG
+        settlement-system: DEBUG
     org:
       springframework:
         security: DEBUG
@@ -32,5 +32,5 @@ logging:
 jwt:
   secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
   expiration:
-    access: 600000  # 10분
+    access: 600000  # 10분 600000
     refresh: 86400000  # 24시간

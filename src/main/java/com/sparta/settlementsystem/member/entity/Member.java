@@ -10,13 +10,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @Table(name = "members")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)  // 기본 생성자 설정
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Member extends BaseTimeEntity {
 
   @Id
@@ -30,15 +34,20 @@ public class Member extends BaseTimeEntity {
   private String password;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private MemberRole role;
 
-  private Member(String email, String password, MemberRole role) {
+  public static Member createMember(String email, String password, MemberRole role) {
+    return Member.builder()
+            .email(email)
+            .password(password)
+            .role(role)
+            .build();
+  }
+
+  public Member(String email, String password, MemberRole role) {
     this.email = email;
     this.password = password;
     this.role = role;
-  }
-
-  public static Member createMember(String email, String password, MemberRole role) {
-    return new Member(email, password, role);
   }
 }

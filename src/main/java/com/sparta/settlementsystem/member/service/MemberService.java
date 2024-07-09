@@ -4,6 +4,7 @@ import com.sparta.settlementsystem.common.exception.CustomException;
 import com.sparta.settlementsystem.member.dto.SignUpRequestDto;
 import com.sparta.settlementsystem.member.dto.SignUpResponseDto;
 import com.sparta.settlementsystem.member.entity.Member;
+import com.sparta.settlementsystem.member.entity.MemberRole;
 import com.sparta.settlementsystem.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
