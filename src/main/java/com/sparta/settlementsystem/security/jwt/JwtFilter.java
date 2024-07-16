@@ -1,7 +1,7 @@
 package com.sparta.settlementsystem.security.jwt;
 
 import com.sparta.settlementsystem.member.entity.MemberRole;
-import com.sparta.settlementsystem.security.CustomUserDetails;
+import com.sparta.settlementsystem.security.custom.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

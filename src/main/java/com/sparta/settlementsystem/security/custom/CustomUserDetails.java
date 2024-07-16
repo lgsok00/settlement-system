@@ -1,4 +1,4 @@
-package com.sparta.settlementsystem.security;
+package com.sparta.settlementsystem.security.custom;
 
 import com.sparta.settlementsystem.member.entity.MemberRole;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,4 +1,4 @@
-package com.sparta.settlementsystem.security;
+package com.sparta.settlementsystem.security.custom;
 
 import com.sparta.settlementsystem.member.entity.Member;
 import com.sparta.settlementsystem.member.repository.MemberRepository;
