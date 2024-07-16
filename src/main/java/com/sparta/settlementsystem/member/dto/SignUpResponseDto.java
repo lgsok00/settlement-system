@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Getter
 @NoArgsConstructor
@@ -17,8 +17,8 @@ public class SignUpResponseDto {
   private Long memberId;
   private String email;
   private MemberRole role;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+  private Timestamp createdAt;
+  private Timestamp updatedAt;
 
   public static SignUpResponseDto from(Member member) {
     return SignUpResponseDto.builder()
