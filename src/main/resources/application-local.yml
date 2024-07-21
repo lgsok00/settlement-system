@@ -1,0 +1,40 @@
+spring:
+  sql:
+    init:
+      mode: always  # data.sql 자동 생성
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/settlement
+    username: settlement
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+        generate_statistics: true
+    show-sql: true
+    defer-datasource-initialization: true  # 테이블 생성 후 data.sql 실행
+
+
+logging:
+  level:
+    root: info  # 전체 애플리케이션 로깅 레벨
+    org.hibernate.sql: debug  # Hibernate SQL 로깅 레벨
+    org.hibernate.type: trace  # Hibernate 타입 로깅 레벨
+    org.springframework.security: debug  # Spring Security 로깅 레벨
+    com.sparta.settlement-system: debug  # 프로젝트 로깅 레벨
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"  # 콘솔 출력 포맷
+
+
+jwt:
+  secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+  expiration:
+    access: 1800000  # 10분 600000
+    refresh: 86400000  # 24시간
