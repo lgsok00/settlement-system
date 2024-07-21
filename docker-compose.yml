@@ -1,27 +1,39 @@
 services:
-  settlement-system:
+  app:
+    container_name: settlement-server
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/settlement
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 1111
+      SPRING_PROFILES_ACTIVE: docker  # 도커 실행 시, application-docker 사용
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/settlement?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: settlement
+      SPRING_DATASOURCE_PASSWORD: 1234
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+
 
   mysql:
     image: mysql:8.0
+    container_name: settlement-mysql
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 1111
       MYSQL_DATABASE: settlement
-    ports:
-      - "3306:3306"
+      MYSQL_USER: settlement
+      MYSQL_PASSWORD: 1234
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # 데이터베이스 초기화 스크립트 마운트
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql-data:

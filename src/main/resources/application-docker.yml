@@ -1,0 +1,41 @@
+spring:
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/settlement?useSSL=false&allowPublicKeyRetrieval=true
+    username: settlement
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+    defer-datasource-initialization: true
+#        jdbc:
+#          batch_size: 30
+#          fetch_size: 50
+
+
+logging:
+  level:
+    root: info
+    com.sparta.settlement-system: info
+    org.springframework.security: info
+    org.hibernate: warn
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+
+
+jwt:
+  secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+  expiration:
+    access: 1800000  # 10분 600000
+    refresh: 86400000  # 24시간
